@@ -68,10 +68,6 @@ class Config:
     PREVIEW_CLIENT_ENABLED = os.getenv('PREVIEW_CLIENT_ENABLED') == 'true'  # type: bool
     # Maps to a class path and name
     PREVIEW_CLIENT = os.getenv('PREVIEW_CLIENT', None)  # type: Optional[str]
-    PREVIEW_CLIENT_URL = os.getenv('PREVIEW_CLIENT_URL')  # type: Optional[str]
-    PREVIEW_CLIENT_USERNAME = os.getenv('PREVIEW_CLIENT_USERNAME')  # type: Optional[str]
-    PREVIEW_CLIENT_PASSWORD = os.getenv('PREVIEW_CLIENT_PASSWORD')  # type: Optional[str]
-    PREVIEW_CLIENT_CERTIFICATE = os.getenv('PREVIEW_CLIENT_CERTIFICATE')  # type: Optional[str]
 
     # Settings for Announcement Client integration
     ANNOUNCEMENT_CLIENT_ENABLED = os.getenv('ANNOUNCEMENT_CLIENT_ENABLED') == 'true'  # type: bool
@@ -92,7 +88,7 @@ class Config:
     ISSUE_TRACKER_MAX_RESULTS = None  # type: int
 
     # Programmatic Description configuration. Please see docs/flask_config.md
-    PROGRAMMATIC_DISPLAY = None  # type: Optional[Dict]
+    PROGRAMMATIC_DISPLAY = None # type: Optional[Dict]
 
     # If specified, will be used to generate headers for service-to-service communication
     # Please note that if specified, this will ignore following config properties:
@@ -138,6 +134,18 @@ class LocalConfig(Config):
     SEARCH_PORT = '5001'
     METADATA_PORT = '5002'
 
+    #TESTING CONFIGS
+    POPULAR_TABLE_PERSONALIZATION = True
+    AUTH_USER_METHOD = get_test_user
+    NOTIFICATIONS_ENABLED = True
+    ISSUE_TRACKER_URL = 'test_url'
+    ISSUE_TRACKER_USER = 'test_user'
+    ISSUE_TRACKER_PASSWORD = 'test_password'
+    ISSUE_TRACKER_PROJECT_ID = 1
+    ISSUE_TRACKER_CLIENT_ENABLED = True
+    ISSUE_TRACKER_MAX_RESULTS = 3
+    ####
+
     # If installing using the Docker bootstrap, this should be modified to the docker host ip.
     LOCAL_HOST = '0.0.0.0'
 
@@ -159,6 +167,9 @@ class LocalConfig(Config):
                                               PORT=METADATA_PORT)
                                           )
 
+    PROGRAMMATIC_DISPLAY = {
+        'Data Invariants': {"display_order": 0}
+    } 
 
 class TestConfig(LocalConfig):
     POPULAR_TABLE_PERSONALIZATION = True

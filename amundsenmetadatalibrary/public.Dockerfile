@@ -3,7 +3,9 @@ WORKDIR /app
 RUN pip3 install gunicorn
 
 COPY requirements.txt /app/requirements.txt
+COPY requirements-internal.txt /app/requirements-internal.txt
 RUN pip3 install -r requirements.txt
+# RUN pip3 install -i http://127.0.0.1:3141/testuser/dev -r requirements-internal.txt
 
 COPY . /app
 

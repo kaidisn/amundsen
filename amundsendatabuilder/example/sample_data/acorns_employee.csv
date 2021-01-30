@@ -1,0 +1,3 @@
+email,first_name,last_name,full_name,github_username,team_name,employee_type,manager_email,slack_id,role_name
+tst-user@acorns.com,user,tst,"tst user",acorns-io,"Team Test Users",engineer,"phboss@example.org",ramundzn,swe
+tst-user-2@acorns.com,,,,,"Team Test Users",,,,

@@ -8,6 +8,7 @@ from metadata_service.entity.badge import Badge
 from amundsen_gremlin.config import (
     LocalGremlinConfig
 )
+# from amundsen_common.models.user import get_user_details
 
 # PROXY configuration keys
 PROXY_HOST = 'PROXY_HOST'
@@ -26,6 +27,16 @@ PROXY_CLIENTS = {
 
 IS_STATSD_ON = 'IS_STATSD_ON'
 USER_OTHER_KEYS = 'USER_OTHER_KEYS'
+
+def get_user_details(user_id):
+    user_info = {
+        'email': 'test@email.com',
+        'user_id': 'user_A',
+        'first_name': 'Firstname',
+        'last_name': 'Lastname',
+        'full_name': 'Firstname Lastname',
+    }
+    return user_info
 
 
 class Config:
@@ -67,7 +78,7 @@ class Config:
 
     SWAGGER_ENABLED = os.environ.get('SWAGGER_ENABLED', False)
 
-    USER_DETAIL_METHOD = None   # type: Optional[function]
+    USER_DETAIL_METHOD = get_user_details   # type: Optional[function]
 
     RESOURCE_REPORT_CLIENT = None   # type: Optional[function]
 
