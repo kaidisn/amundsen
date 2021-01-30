@@ -1,24 +1,24 @@
 version: '3'
 services:
-  # neo4j:
-  #     image: neo4j:3.3.0
-  #     container_name: neo4j_amundsen
-  #     environment:
-  #       - NEO4J_AUTH=neo4j/test
-  #     ulimits:
-  #       nofile:
-  #         soft: 40000
-  #         hard: 40000
-  #     ports:
-  #         - 7474:7474
-  #         - 7687:7687
-  #     volumes:
-  #         - ./example/docker/neo4j/conf:/conf
-  #         - ./example/docker/neo4j/plugins:/plugins
-  #         - ./example/backup:/backup
-  #         - neo4j_data:/neo4j/data
-  #     networks:
-  #       - amundsennet
+  neo4j:
+      image: neo4j:3.3.0
+      container_name: neo4j_amundsen
+      environment:
+        - NEO4J_AUTH=neo4j/test
+      ulimits:
+        nofile:
+          soft: 40000
+          hard: 40000
+      ports:
+          - 7474:7474
+          - 7687:7687
+      volumes:
+          - ./example/docker/neo4j/conf:/conf
+          - ./example/docker/neo4j/plugins:/plugins
+          - ./example/backup:/backup
+          - neo4j_data:/neo4j/data
+      networks:
+        - amundsennet
   elasticsearch:
       image: elasticsearch:6.7.0
       container_name: es_amundsen
@@ -47,15 +47,14 @@ services:
   amundsenmetadata:
       image: amundsendev/amundsen-metadata:3.0.0
       container_name: amundsenmetadata
-      # depends_on:
-        # - neo4j
+      depends_on:
+        - neo4j
       ports:
         - 5002:5000
       networks:
         - amundsennet
       environment:
-         - PROXY_HOST=bolt://54.198.220.53
-         - CREDENTIALS_PROXY_PASSWORD=@acornsloader
+         - PROXY_HOST=bolt://neo4j_amundsen
       command: gunicorn -w 2 --bind :5000 metadata_service.metadata_wsgi
   amundsenfrontend:
       image: amundsendev/amundsen-frontend:3.1.0
@@ -74,7 +73,7 @@ services:
         # defining `AUTH_USER_METHOD` to a hardcoded dummy user in `amundsen_application.tests.test_utils.get_test_user()`
         # See further docs in https://github.com/amundsen-io/amundsenfrontendlibrary/blob/master/docs/configuration.md#flask
         # and https://github.com/amundsen-io/amundsenfrontendlibrary/blob/master/docs/configuration.md#authentication
-        - FRONTEND_SVC_CONFIG_MODULE_CLASS=amundsen_application.config.LocalConfig
+        - FRONTEND_SVC_CONFIG_MODULE_CLASS=amundsen_application.config.TestConfig
       command: gunicorn -w 2 --bind :5000 amundsen_application.wsgi
 
 networks:
