@@ -87,13 +87,3 @@ class UserSchema(AttrsSchema):
 
         if self._str_no_value(data.get('user_id')):
             raise ValidationError('"user_id" or "email" must be provided')
-
-def get_user_details(user_id) -> None:
-    user_info = {
-        'email': 'test@email.com',
-        'user_id': user_id,
-        'first_name': 'Firstname',
-        'last_name': 'Lastname',
-        'full_name': 'Firstname Lastname',
-    }
-    return user_info

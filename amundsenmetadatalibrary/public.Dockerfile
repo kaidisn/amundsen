@@ -1,4 +1,4 @@
-FROM python:3.7-slim as base
+FROM python:3.7 as base
 WORKDIR /app
 RUN pip3 install gunicorn
 
@@ -8,6 +8,11 @@ RUN pip3 install -r requirements.txt
 # RUN pip3 install -i http://127.0.0.1:3141/testuser/dev -r requirements-internal.txt
 
 COPY . /app
+
+# LDAP install
+RUN apt-get update
+RUN apt-get install -y build-essential python3-dev libldap2-dev libsasl2-dev ldap-utils tox lcov valgrind
+RUN pip3 install python-ldap
 
 CMD [ "python3", "metadata_service/metadata_wsgi.py" ]
 

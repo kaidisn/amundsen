@@ -3,12 +3,13 @@
 
 import distutils.util
 import os
+import ldap, sys
+import logging
 from typing import List, Dict, Optional, Set  # noqa: F401
 from metadata_service.entity.badge import Badge
 from amundsen_gremlin.config import (
     LocalGremlinConfig
 )
-# from amundsen_common.models.user import get_user_details
 
 # PROXY configuration keys
 PROXY_HOST = 'PROXY_HOST'
@@ -28,16 +29,57 @@ PROXY_CLIENTS = {
 IS_STATSD_ON = 'IS_STATSD_ON'
 USER_OTHER_KEYS = 'USER_OTHER_KEYS'
 
-def get_user_details(user_id):
-    user_info = {
-        'email': 'test@email.com',
-        'user_id': 'user_A',
-        'first_name': 'Firstname',
-        'last_name': 'Lastname',
-        'full_name': 'Firstname Lastname',
-    }
-    return user_info
+# LDAP endpoint
+LDAP_SERVER = 'ldaps://ldap.google.com:636'
+LDAP_BASE = 'dc=example,dc=com'
+# SSL certs
+CACERTFILE='/app/cert.pem'
+GOOG_CERT = '/app/goog.crt'
+GOOG_KEY = '/app/goog.key'
 
+LDAP_CLIENT = None
+
+LOGGER = logging.getLogger(__name__)
+
+def set_ldap_client():
+    global LDAP_CLIENT
+    l = ldap.initialize(LDAP_SERVER)
+    l.protocol_version=ldap.VERSION3
+
+    # Force cert validation
+    l.set_option(ldap.OPT_X_TLS_REQUIRE_CERT,ldap.OPT_X_TLS_ALLOW)
+    # Set path name of file containing all trusted CA certificates
+    l.set_option(ldap.OPT_X_TLS_CACERTFILE,CACERTFILE)
+    l.set_option(ldap.OPT_X_TLS_CERTFILE,GOOG_CERT)
+    l.set_option(ldap.OPT_X_TLS_KEYFILE,GOOG_KEY)
+    # Force libldap to create a new SSL context (must be last option!)
+    l.set_option(ldap.OPT_X_TLS_NEWCTX,0)
+    LDAP_CLIENT = l
+
+class UserDetails:
+
+    def get_user_details(user_id):
+        user_resp = LDAP_CLIENT.search_s(LDAP_BASE, ldap.SCOPE_SUBTREE, "(mail={})".format(user_id))
+
+        if not user_resp:
+            LOGGER.error('Failed user details fetch for {}'.format(user_id))
+            return ''
+
+        user_d = user_resp[0][1]
+        # For optional fields, change to .get('field_name','') so that empty str is provided
+        user_info = {
+            'email': user_id,
+            'user_id': user_d.get('uid')[0].decode("utf-8"),
+            'first_name': user_d.get('displayName')[0].decode("utf-8").split(' ')[:-1],
+            'last_name': user_d.get('displayName')[0].decode("utf-8").split(' ')[-1],
+            'full_name': user_d.get('displayName')[0].decode("utf-8"),
+            'role_name': user_d.get('title')[0].decode("utf-8"),
+            # 'team_name': 'some team a',
+            # 'manager_fullname': 'some manager bob',
+            # 'github_username': 'some_github_name',
+            # 'slack_id': 'some_slack_id'
+        }
+        return user_info
 
 class Config:
     LOG_FORMAT = '%(asctime)s.%(msecs)03d [%(levelname)s] %(module)s.%(funcName)s:%(lineno)d (%(process)d:' \
@@ -78,7 +120,8 @@ class Config:
 
     SWAGGER_ENABLED = os.environ.get('SWAGGER_ENABLED', False)
 
-    USER_DETAIL_METHOD = get_user_details   # type: Optional[function]
+    set_ldap_client()
+    USER_DETAIL_METHOD = UserDetails.get_user_details   # type: Optional[function]
 
     RESOURCE_REPORT_CLIENT = None   # type: Optional[function]
 
